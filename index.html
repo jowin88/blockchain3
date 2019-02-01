@@ -2,26 +2,79 @@
 <head>
 <link rel="stylesheet" type="text/css" href="node_modules/semantic-ui/dist/semantic.min.css">
 <script
-  src="https://code.jquery.com/jquery-3.1.1.min.js"
-  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-  crossorigin="anonymous"></script>
+  src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script src="node_modules/semantic-ui/dist/semantic.min.js"></script>
+
+<!-- Compressed CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.1/dist/css/foundation.min.css">
+
+<!-- Compressed JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.1/dist/js/foundation.min.js" integrity="sha256-WUKHnLrIrx8dew//IpSEmPN/NT3DGAEmIePQYIEJLLs= sha384-53StQWuVbn6figscdDC3xV00aYCPEz3srBdV/QGSXw3f19og3Tq2wTRe0vJqRTEO sha512-X9O+2f1ty1rzBJOC8AXBnuNUdyJg0m8xMKmbt9I3Vu/UOWmSg5zG+dtnje4wAZrKtkopz/PEDClHZ1LXx5IeOw==" crossorigin="anonymous"></script>
+
 <script>
 $(document).ready(function(){
+	$.fn.api.settings.api = {
+	  'update' : 'http://localhost:8080/blocks'
+	};
+	$.api({
+		action: 'update',
+		on:'now',
+		method: "GET",
+		data : {},
+		onSuccess :function(response){
+			alert('aaa');
+		  $("#result").html("Data: " + response);
+		},
+		onFailure: function(response) {
+      // request failed, or valid response but response.success = false
+		alert("fail");
+		},
+		onError: function(errorMessage) {
+		  // invalid response
+		  alert("fail error");
+		},
+		onAbort: function(errorMessage) {
+		  // navigated to a new page, CORS issue, or user canceled request
+		  alert("abort");
+		}
+	  });
 	$('.tabular.menu .item').tab();
 	$("#click").click();
-  /*$("button").click(function(){
-    $.post("http://localhost:8080",
-    {
-      from: $("#from").val(),
-	  to: $("#to").val(),
-	  amount: $("#amount").val()
-    },
-    function(data,status){
-      $("#result").html("Data: " + data + "\nStatus: " + status);
-    },
-	"json");
-  });*/
+	$('.ui.form').form({
+		on: 'blur',
+		fields: {
+			to : {
+				identifier: 'to',
+				rules: [
+				  {
+					type   : 'empty',
+					prompt : 'Please insert your receiver'
+				  }
+				]
+			},
+			amount : {
+				identifier: 'amount',
+				rules: [
+				  {
+					type   : 'empty',
+					prompt : 'Please insert amount of transfer'
+				  }
+				]
+			}
+		},
+		onSuccess : function(){
+			/*$.get("http://localhost:8080/mine",
+			{
+			  from: $("#from").val(),
+			  to: $("#to").val(),
+			  amount: $("#amount").val()
+			},
+			function(data,status){
+			  $("#result").html("Data: " + data + "\nStatus: " + status);
+			},
+			"json");*/
+		}
+	}).form('add rule', 'amount', ['empty','number']);
 });
 </script>
 <style>
@@ -30,104 +83,71 @@ $(document).ready(function(){
 </head>
 <body>
 <center>
-	<h1>FrontEnd Wallet Application (FEWA)</h1>
+	<h1>Front-End Wallet Application (FEWA)</h1>
 	<p>
-		Frontend wallet application that allows a person to track account balance, transfer coins to another account, and show transactions history. 
+		FEWA allows a person to track account balance, transfer coins to another account, and show transactions history. 
 	</p>
-	
-	<div class="ui tabular menu">
+	<p>
+		For now, we use port 80. And we assume starting balance of this account is 100.
+	</p>
+	<p>
+		<a href="http://localhost:8080/blocks" target="_blank">Click here</a> to see the current blockchain on this port 80 system.
+	</p>
+</center>
+	<div class="ui top attached tabular menu">
 	  <div class="item" data-tab="tab-name" id="click">Account Balance</div>
 	  <div class="item" data-tab="tab-name2">Transfer Coins</div>
 	  <div class="item" data-tab="tab-name3">Transaction History</div>
 	</div>
 	
-	<div class="ui tab" data-tab="tab-name">
+	<div class="ui bottom attached tab segment" data-tab="tab-name">
 	  Account Balance : 100.00
 	</div>
 	
-	<div class="ui tab" data-tab="tab-name2">
-		<form action="http://localhost:8080/mine" method="GET" target="_blank">
-			<input id="from" type="text" value="from" name="from"/>
-			<input id="to" type="text" value="to" name="to"/>
-			<input id="amount" type="text" value="10" name="amount"/>
-			<button type="submit">Send</button>
+	<div class="ui bottom attached tab segment" data-tab="tab-name2">	
+		<form class="ui form" action="http://localhost:8080/transaction" method="POST">
+			<input id="from" type="hidden" value="from" name="from"/>
+			<div class="two fields">
+				<div class="field">
+					<label>To</label>
+					<input id="to" required type="text" placeholder="to.." name="to"/>
+				</div>
+				<div class="field">
+					<label>Amount</label>
+					<input id="amount" required type="text" placeholder="amount..." name="amount"/>
+				</div>
+			</div>
+			<div class="ui submit button">Transfer</div>
+			<div class="ui error message"></div>
 		</form>
 	</div>
 	
-	<div class="ui tab" data-tab="tab-name3">
-		in out
+	<div class="ui bottom attached tab segment" data-tab="tab-name3">
+		<table class="ui celled table">
+		  <thead>
+			<tr><th>Name</th>
+			<th>Age</th>
+			<th>Job</th>
+		  </tr></thead>
+		  <tbody>
+			<tr>
+			  <td data-label="Name">James</td>
+			  <td data-label="Age">24</td>
+			  <td data-label="Job">Engineer</td>
+			</tr>
+			<tr>
+			  <td data-label="Name">Jill</td>
+			  <td data-label="Age">26</td>
+			  <td data-label="Job">Engineer</td>
+			</tr>
+			<tr>
+			  <td data-label="Name">Elyse</td>
+			  <td data-label="Age">24</td>
+			  <td data-label="Job">Designer</td>
+			</tr>
+		  </tbody>
+		</table>
 	</div>
-</center>
-	<div class="server">
-		<h1>SERVER 8080</h1>
-		<br/><br/>
-		<h1>Send POST to /transaction at nodejs server</h1>
-		<form action="http://localhost:8080/transaction" method="POST" target="_blank">
-			<input id="from" type="text" value="from" name="from"/>
-			<input id="to" type="text" value="to" name="to"/>
-			<input id="amount" type="text" value="10" name="amount"/>
-			<button type="submit">Send</button>
-		</form>
-		
-		<h1>Send GET to /mine at nodejs server</h1>
-		<form action="http://localhost:8080/mine" method="GET" target="_blank">
-			<input id="from" type="text" value="from" name="from"/>
-			<input id="to" type="text" value="to" name="to"/>
-			<input id="amount" type="text" value="10" name="amount"/>
-			<button type="submit">Send</button>
-		</form>
-		<br/>
-		<br/>
-		<a href="http://localhost:8080/blocks" target="_blank">Get block list of blockchain</a>
-		<div id="result"></div>
-	</div>
-	<br/><br/>
-	<div class="server">
-		<h1>SERVER 8081</h1>
-		<br/><br/>
-		<h1>Send POST to /transaction at nodejs server</h1>
-		<form action="http://localhost:8081/transaction" method="POST" target="_blank">
-			<input id="from" type="text" value="from1" name="from"/>
-			<input id="to" type="text" value="to1" name="to"/>
-			<input id="amount" type="text" value="11" name="amount"/>
-			<button type="submit">Send</button>
-		</form>
-		
-		<h1>Send GET to /mine at nodejs server</h1>
-		<form action="http://localhost:8081/mine" method="GET" target="_blank">
-			<input id="from" type="text" value="from1" name="from"/>
-			<input id="to" type="text" value="to1" name="to"/>
-			<input id="amount" type="text" value="11" name="amount"/>
-			<button type="submit">Send</button>
-		</form>
-		<br/>
-		<br/>
-		<a href="http://localhost:8081/blocks" target="_blank">Get block list of blockchain</a>
-		<div id="result"></div>
-	</div>
-	<br/><br/>
-	<div class="server">
-		<h1>SERVER 8082</h1>
-		<br/><br/>
-		<h1>Send POST to /transaction at nodejs server</h1>
-		<form action="http://localhost:8082/transaction" method="POST" target="_blank">
-			<input id="from" type="text" value="from2" name="from"/>
-			<input id="to" type="text" value="to2" name="to"/>
-			<input id="amount" type="text" value="12" name="amount"/>
-			<button type="submit">Send</button>
-		</form>
-		
-		<h1>Send GET to /mine at nodejs server</h1>
-		<form action="http://localhost:8082/mine" method="GET" target="_blank">
-			<input id="from" type="text" value="from2" name="from"/>
-			<input id="to" type="text" value="to2" name="to"/>
-			<input id="amount" type="text" value="12" name="amount"/>
-			<button type="submit">Send</button>
-		</form>
-		<br/>
-		<br/>
-		<a href="http://localhost:8082/blocks" target="_blank">Get block list of blockchain</a>
-		<div id="result"></div>
-	</div>
+	<div id="result"></div>
 </body>
 </html>
