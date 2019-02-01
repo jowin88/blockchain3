@@ -1,152 +1,104 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<link rel="stylesheet" type="text/css" href="node_modules/semantic-ui/dist/semantic.min.css">
-<script
-  src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-<script src="node_modules/semantic-ui/dist/semantic.min.js"></script>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
 
-<!-- Compressed CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.1/dist/css/foundation.min.css">
+	<!-- jQuery library -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-<!-- Compressed JavaScript -->
-<script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.1/dist/js/foundation.min.js" integrity="sha256-WUKHnLrIrx8dew//IpSEmPN/NT3DGAEmIePQYIEJLLs= sha384-53StQWuVbn6figscdDC3xV00aYCPEz3srBdV/QGSXw3f19og3Tq2wTRe0vJqRTEO sha512-X9O+2f1ty1rzBJOC8AXBnuNUdyJg0m8xMKmbt9I3Vu/UOWmSg5zG+dtnje4wAZrKtkopz/PEDClHZ1LXx5IeOw==" crossorigin="anonymous"></script>
-
-<script>
-$(document).ready(function(){
-	$.fn.api.settings.api = {
-	  'update' : 'http://localhost:8080/blocks'
-	};
-	$.api({
-		action: 'update',
-		on:'now',
-		method: "GET",
-		data : {},
-		onSuccess :function(response){
-			alert('aaa');
-		  $("#result").html("Data: " + response);
-		},
-		onFailure: function(response) {
-      // request failed, or valid response but response.success = false
-		alert("fail");
-		},
-		onError: function(errorMessage) {
-		  // invalid response
-		  alert("fail error");
-		},
-		onAbort: function(errorMessage) {
-		  // navigated to a new page, CORS issue, or user canceled request
-		  alert("abort");
-		}
-	  });
-	$('.tabular.menu .item').tab();
-	$("#click").click();
-	$('.ui.form').form({
-		on: 'blur',
-		fields: {
-			to : {
-				identifier: 'to',
-				rules: [
-				  {
-					type   : 'empty',
-					prompt : 'Please insert your receiver'
-				  }
-				]
-			},
-			amount : {
-				identifier: 'amount',
-				rules: [
-				  {
-					type   : 'empty',
-					prompt : 'Please insert amount of transfer'
-				  }
-				]
-			}
-		},
-		onSuccess : function(){
-			/*$.get("http://localhost:8080/mine",
+	<!-- Latest compiled JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+	<script>
+	$(document).ready(function(){
+		$.get("blocks", function(data, status){
+			if(status=="success")
 			{
-			  from: $("#from").val(),
-			  to: $("#to").val(),
-			  amount: $("#amount").val()
-			},
-			function(data,status){
-			  $("#result").html("Data: " + data + "\nStatus: " + status);
-			},
-			"json");*/
-		}
-	}).form('add rule', 'amount', ['empty','number']);
-});
-</script>
-<style>
-.server{border:1px solid black;padding:10px;margin:10px;width:80%;}
-</style>
+				stringer = data;
+				data = JSON.parse(data);
+				total_transfer = 0.00;
+				transaction_history = "";
+				for(i=0;i<data.length;i++)
+				{
+					if(data[i].index>0)
+					{
+						total_transfer+=parseFloat(data[i].data.transactions[0].amount);
+						transaction_history+="<tr><td>"+data[i].timestamp+"</td><td>"+data[i].data.transactions[0].to+"</td><td>"+data[i].data.transactions[0].amount+"</td></tr>";
+					}
+				}
+				if(data.length==1){transaction_history+="<tr><td colspan=2 align-'center'>No transaction</td></tr>";}
+				$("#transaction_history").html(transaction_history);
+				balance = 100 - total_transfer;
+				$("#balance").html(balance.toFixed(2));
+			}
+		});
+	});
+	</script>
 </head>
 <body>
-<center>
-	<h1>Front-End Wallet Application (FEWA)</h1>
-	<p>
-		FEWA allows a person to track account balance, transfer coins to another account, and show transactions history. 
-	</p>
-	<p>
-		For now, we use port 80. And we assume starting balance of this account is 100.
-	</p>
-	<p>
-		<a href="http://localhost:8080/blocks" target="_blank">Click here</a> to see the current blockchain on this port 80 system.
-	</p>
-</center>
-	<div class="ui top attached tabular menu">
-	  <div class="item" data-tab="tab-name" id="click">Account Balance</div>
-	  <div class="item" data-tab="tab-name2">Transfer Coins</div>
-	  <div class="item" data-tab="tab-name3">Transaction History</div>
-	</div>
-	
-	<div class="ui bottom attached tab segment" data-tab="tab-name">
-	  Account Balance : 100.00
-	</div>
-	
-	<div class="ui bottom attached tab segment" data-tab="tab-name2">	
-		<form class="ui form" action="http://localhost:8080/transaction" method="POST">
-			<input id="from" type="hidden" value="from" name="from"/>
-			<div class="two fields">
-				<div class="field">
-					<label>To</label>
-					<input id="to" required type="text" placeholder="to.." name="to"/>
-				</div>
-				<div class="field">
-					<label>Amount</label>
-					<input id="amount" required type="text" placeholder="amount..." name="amount"/>
-				</div>
+	<div class="container">
+		<h2>Front-End Wallet Application (FEWA)</h2>
+		<p>
+			FEWA allows a person to track account balance, transfer coins to another account, and show transactions history. 
+		</p>
+		<p>
+			For now, we use port 8080. And we assume starting balance of this account is 100.
+		</p>
+		<p>
+			<a href="blocks" target="_blank">Click here</a> to view the current blockchain.
+		</p>
+		
+		<ul class="nav nav-tabs">
+			<li class="active"><a data-toggle="tab" href="#menu1">Account Balance</a></li>
+			<li><a data-toggle="tab" href="#menu2">Transfer Coins</a></li>
+			<li><a data-toggle="tab" href="#menu3">Transaction History</a></li>
+		</ul>
+
+		<div class="tab-content">
+			<div id="menu1" class="tab-pane fade in active">
+			  <h3>Account Balance</h3>
+			  <p>Account Balance : <font id="balance">100.00</font></p>
 			</div>
-			<div class="ui submit button">Transfer</div>
-			<div class="ui error message"></div>
-		</form>
-	</div>
-	
-	<div class="ui bottom attached tab segment" data-tab="tab-name3">
-		<table class="ui celled table">
-		  <thead>
-			<tr><th>Name</th>
-			<th>Age</th>
-			<th>Job</th>
-		  </tr></thead>
-		  <tbody>
-			<tr>
-			  <td data-label="Name">James</td>
-			  <td data-label="Age">24</td>
-			  <td data-label="Job">Engineer</td>
-			</tr>
-			<tr>
-			  <td data-label="Name">Jill</td>
-			  <td data-label="Age">26</td>
-			  <td data-label="Job">Engineer</td>
-			</tr>
-			<tr>
-			  <td data-label="Name">Elyse</td>
-			  <td data-label="Age">24</td>
-			  <td data-label="Job">Designer</td>
-			</tr>
-		  </tbody>
-		</table>
+			<div id="menu2" class="tab-pane fade">
+				<h3>Transfer Coins</h3>
+				<form class="form-horizontal" action="http://localhost:8080/transaction" method="POST">
+					<input id="from" type="hidden" value="from" name="from"/>
+						<div class="form-group">
+							<label class="control-label col-sm-2" for="to">To</label>
+							<div class="col-sm-10"> 
+								<input class="form-control" id="to" required type="text" placeholder="to.." name="to"/>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="control-label col-sm-2" for="amount">Amount</label>
+							<div class="col-sm-10"> 
+								<input class="form-control" id="amount" required type="number" placeholder="amount..." name="amount"/>
+							</div>
+						</div>
+					<div class="form-group"> 
+						<div class="col-sm-offset-2 col-sm-10">
+							<button type="submit" class="btn btn-default">Submit</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div id="menu3" class="tab-pane fade">
+				<h3>Transaction History</h3>
+				<table class="table table-hover">
+					<thead>
+						<tr>
+							<th>Data/Time</th>
+							<th>Transferred To</th>
+							<th>Amount</th>
+						</tr>
+					</thead>
+					<tbody id="transaction_history">
+					</tbody>
+				</table>
+			</div>
+		</div>
 	</div>
 	<div id="result"></div>
 </body>

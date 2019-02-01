@@ -101,7 +101,12 @@ http.createServer(function (req, res) {
 				this_nodes_transactions = transaction(this_nodes_transactions, post);
 				consensus("mine");
 			});
-			result = "<script>alert('Your transaction is submitted');window.history.back();</script>";
+			var fs = require('fs');ended="yes";
+			fs.readFile('transaction.html','utf8', function(err, data) {
+				res.writeHead(200, {'Content-Type': 'text/html'});
+				res.write(data); //write a response to the client
+				res.end(); //end the response
+			});
 		}
 		else{result="No result";}
 	}
